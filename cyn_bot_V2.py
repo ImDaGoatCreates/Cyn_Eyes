@@ -1,3 +1,7 @@
+#THIS IS IMPORTANT, AND THE CODE WILL ONLY WORK IF YOU DO THIS PROPERLY. The way to get the code to run is to type the following in the terminal and hit ENTER:
+#python3 cyn_bot_V2.py
+#Type that in the terminal EXACTLY otherwise it won't work and hit ENTER to run the code
+
 import pygame
 import tkinter as tk
 import random
