@@ -48,7 +48,7 @@ def trigger_annoyed():
     global annoyed, annoyed_start_time, annoyed_duration
     annoyed = True
     annoyed_start_time = pygame.time.get_ticks()
-    annoyed_duration = random.randint(2000, 6000)  # 2 to 6 seconds in milliseconds
+    annoyed_duration = random.randint(4000, 8000)  # 4 to 8 seconds in milliseconds
 
 # Main loop
 while running:
