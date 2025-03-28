@@ -48,7 +48,7 @@ def trigger_annoyed():
     global annoyed, annoyed_start_time, annoyed_duration
     annoyed = True
     annoyed_start_time = pygame.time.get_ticks()
-    annoyed_duration = random.randint(4000, 8000)  # 4 to 8 seconds in milliseconds
+    annoyed_duration = random.randint(7000, 14000)  # 7 to 14 seconds in milliseconds
 
 # Main loop
 while running:
@@ -105,7 +105,7 @@ while running:
     # Annoyed expression overlay (lid line & black box)
     if annoyed:
         # Black box covering the upper portion of the eye
-        lid_cover_height = eye_height * 0.475  # Covers the top 50% of the eye
+        lid_cover_height = eye_height * 0.475  # Covers the top 47.5% of the eye
         left_cover = pygame.Rect(initialX, eye_y, eye_width, lid_cover_height)
         right_cover = pygame.Rect(secondX, eye_y, eye_width, lid_cover_height)
 
