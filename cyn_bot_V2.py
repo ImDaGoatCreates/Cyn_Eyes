@@ -32,12 +32,14 @@ pygame.mouse.set_visible(False)
 running = True
 
 # Eye properties
-eye_width = screen_width / 3.75
-eye_height = (screen_height / 5) * 4
+eye_width = screen_width / 3.75 + 20
+eye_height = (screen_height / 5) * 4 + 20
 eye_spacing = (screen_width / 6) * 2
 initialX = (screen.get_width() - (eye_width * 2 + eye_spacing)) / 2
 secondX = initialX + eye_width + eye_spacing
 eye_y = (screen.get_height() - eye_height) / 2
+eye_top_y = eye_y
+eye_bottom_y = eye_y + eye_height
 
 # Blinking variables
 open_time = random.randint(7500, 12500)
@@ -46,8 +48,6 @@ last_state_change_time = pygame.time.get_ticks()
 current_state = 'open'
 blink_speed = 45
 eye_current_height = eye_height
-eye_top_y = eye_y
-eye_bottom_y = eye_y + eye_height
 
 # Expression variables
 scared = False
@@ -90,21 +90,17 @@ center_image = pygame.image.load(SOLVER_IMAGE_PATH)
 center_image = pygame.transform.scale(center_image, (screen_width, screen_height))
 
 # Eye movement variables
-eye_move_range_x = 50  # wider horizontal movement
-eye_move_range_y = 40  # wider vertical movement
-
-eye_move_delay = 800  # ms between movements
+eye_move_range_x = 50
+eye_move_range_y = 40
+eye_move_delay = 800
 last_eye_move_time = 0
-
 eye_wait_time_range = (2000, 5000)
 eye_waiting = False
 eye_wait_start_time = 0
 eye_wait_duration = 0
-
 eye_move_sequence_length = 0
 eye_move_count = 0
 eye_returning = False
-
 eye_current_offsets = [0, 0]
 eye_target_offsets = [0, 0]
 
@@ -127,13 +123,13 @@ def trigger_happy():
     happy_duration = random.randint(4000, 8000)
 
 def trigger_puppy():
-    global puppy_mode, puppy_start_time
+    global puppy_mode, puppy_start_time, puppy_duration
     puppy_mode = True
     puppy_start_time = pygame.time.get_ticks()
     puppy_duration = random.randint(4000, 8000)
 
 def trigger_shocked():
-    global shocked, shocked_start_time
+    global shocked, shocked_start_time, shocked_duration
     shocked = True
     shocked_start_time = pygame.time.get_ticks()
     shocked_duration = random.randint(4000, 8000)
@@ -143,13 +139,6 @@ def trigger_center_image():
     center_image_mode = True
     center_image_start_time = pygame.time.get_ticks()
     center_image_duration = random.randint(4000, 8000)
-
-def draw_happy_eyes():
-    happy_eye_top_y = eye_y
-    left_eye_rect = pygame.Rect(initialX, happy_eye_top_y, eye_width, eye_bottom_y - eye_top_y)
-    right_eye_rect = pygame.Rect(secondX, happy_eye_top_y, eye_width, eye_bottom_y - eye_top_y)
-    pygame.draw.ellipse(screen, "yellow", left_eye_rect)
-    pygame.draw.ellipse(screen, "yellow", right_eye_rect)
 
 # Main loop
 while running:
@@ -193,17 +182,17 @@ while running:
             trigger_annoyed()
         last_annoyed_check = current_time
 
-    if not annoyed and not happy and not puppy_mode and not shocked and current_time - last_happy_check >= 60000:
+    if not any([annoyed, happy, puppy_mode, shocked]) and current_time - last_happy_check >= 60000:
         if random.random() < 0.15:
             trigger_happy()
         last_happy_check = current_time
 
-    if not annoyed and not happy and not puppy_mode and not shocked and current_time - last_puppy_check >= 45000:
+    if not any([annoyed, happy, puppy_mode, shocked]) and current_time - last_puppy_check >= 45000:
         if random.random() < 0.15:
             trigger_puppy()
         last_puppy_check = current_time
 
-    if not center_image_mode and not shocked and not puppy_mode and not annoyed and not happy and current_time - last_center_image_check >= 100000:
+    if not any([center_image_mode, shocked, puppy_mode, annoyed, happy]) and current_time - last_center_image_check >= 100000:
         if random.random() < 0.10:
             trigger_center_image()
         last_center_image_check = current_time
@@ -222,7 +211,7 @@ while running:
         center_image_mode = False
 
     # Blinking logic
-    if not shocked and not annoyed and not scared and not happy and not puppy_mode and not center_image_mode:
+    if not any([shocked, annoyed, scared, happy, puppy_mode, center_image_mode]):
         if current_state == 'open' and current_time - last_state_change_time >= open_time:
             current_state = 'closing'
         elif current_state == 'closing':
@@ -256,8 +245,8 @@ while running:
         yellow_right = pygame.Rect(secondX, eye_top_y, eye_width, eye_bottom_y - eye_top_y)
         pygame.draw.ellipse(screen, "yellow", yellow_left)
         pygame.draw.ellipse(screen, "yellow", yellow_right)
-        black_margin_x = eye_width * 0.075
-        black_margin_y = (eye_bottom_y - eye_top_y) * 0.05
+        black_margin_x = (eye_width + 20) * 0.075
+        black_margin_y = (eye_bottom_y - eye_top_y + 20) * 0.05
         black_width = eye_width - 2 * black_margin_x
         black_height = (eye_bottom_y - eye_top_y) - 2 * black_margin_y
         black_left = pygame.Rect(yellow_left.x + black_margin_x, yellow_left.y + black_margin_y, black_width, black_height)
@@ -265,26 +254,31 @@ while running:
         pygame.draw.ellipse(screen, "black", black_left)
         pygame.draw.ellipse(screen, "black", black_right)
 
-    elif happy:
-        draw_happy_eyes()
+    elif happy or annoyed:
+        left_eye_rect = pygame.Rect(initialX, eye_top_y, eye_width, eye_bottom_y - eye_top_y)
+        right_eye_rect = pygame.Rect(secondX, eye_top_y, eye_width, eye_bottom_y - eye_top_y)
+        pygame.draw.ellipse(screen, "yellow", left_eye_rect)
+        pygame.draw.ellipse(screen, "yellow", right_eye_rect)
+        eye_half_height = (eye_bottom_y - eye_top_y) / 2
+        if happy:
+            pygame.draw.rect(screen, "black", (initialX, eye_top_y + eye_half_height, eye_width, eye_half_height))
+            pygame.draw.rect(screen, "black", (secondX, eye_top_y + eye_half_height, eye_width, eye_half_height))
+        elif annoyed:
+            pygame.draw.rect(screen, "black", (initialX, eye_top_y, eye_width, eye_half_height))
+            pygame.draw.rect(screen, "black", (secondX, eye_top_y, eye_width, eye_half_height))
+        eyelid_thickness = 15
+        eyelid_extension = 50
+        eyelid_y = eye_top_y + eye_half_height - eyelid_thickness // 2
+        pygame.draw.rect(screen, "yellow", (initialX - eyelid_extension, eyelid_y, eye_width + 2 * eyelid_extension, eyelid_thickness))
+        pygame.draw.rect(screen, "yellow", (secondX - eyelid_extension, eyelid_y, eye_width + 2 * eyelid_extension, eyelid_thickness))
 
     elif puppy_mode:
         screen.blit(puppy_image_left, (initialX, eye_y))
         screen.blit(puppy_image_right, (secondX, eye_y))
 
     else:
-        left_eye_rect = pygame.Rect(
-            initialX + eye_current_offsets[0],
-            eye_top_y + eye_current_offsets[1],
-            eye_width,
-            eye_bottom_y - eye_top_y
-        )
-        right_eye_rect = pygame.Rect(
-            secondX + eye_current_offsets[0],
-            eye_top_y + eye_current_offsets[1],
-            eye_width,
-            eye_bottom_y - eye_top_y
-        )
+        left_eye_rect = pygame.Rect(initialX + eye_current_offsets[0], eye_top_y + eye_current_offsets[1], eye_width, eye_bottom_y - eye_top_y)
+        right_eye_rect = pygame.Rect(secondX + eye_current_offsets[0], eye_top_y + eye_current_offsets[1], eye_width, eye_bottom_y - eye_top_y)
         pygame.draw.ellipse(screen, "yellow", left_eye_rect)
         pygame.draw.ellipse(screen, "yellow", right_eye_rect)
 
